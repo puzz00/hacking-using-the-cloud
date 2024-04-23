@@ -2,6 +2,9 @@
 
 For more information about the cloud, please take a look at my notes on [cloud foundations]('https://github.com/puzz00/cloud-foundations/blob/main/cloud-foundations.md')
 
+>[!NOTE]
+>In order for the attacks in these notes to work the target will need to be *socially engineered* into clicking on links or inputting data - this is not covered here but I will be adding a repo on it in the - hopefully - near future...
+
 This set of notes will focus specifically on *using* the cloud to help us with our hacking activities.
 
 ## Cloud Basics
@@ -65,7 +68,7 @@ sudo ssh -i kali_keypair.pem kali@11.22.33.44
 
 We now have an instance of kali linux up and running from the cloud - we can access it via SSH from our local machine and we can therefore start to use it to help us with our hacking activities :smiling_imp: 
 
-## Phishing
+## Basic Phishing
 
 We can replicate any websites login page and then serve our fake page from our cloud computer. We can then socially engineer people into entering their credentials on our fake page so we can steal them - this is the essence of phishing.
 
@@ -124,7 +127,7 @@ We can now transfer the mirrored website files to our remote kali machine by sim
 
 ![phishing3](/images/11.png)
 
-Once we have completed all of the above steps we can test if it has worked by navigating to the IP address of our kali machine in the cloud - we should see a replica of the login page we are using for our phishing endeavours.
+Once we have completed all of the above steps we can test if it has worked by navigating to the IP address of our kali machine in the cloud - we should see a replica of the login page we are using for our phishing endeavours :fishing_pole_and_fish: 
 
 ![phishing4](/images/12.png)
 
@@ -142,7 +145,7 @@ Once we have found the correct login form, we need to check for any *id* paramet
 We can then find the `action=` parameter and change it so it navigates to a malicious PHP script which will harvest the credentials.
 
 >[!NOTE]
->The `action` parameter specifies what should happen to the input data once the submit button has been clicked - we want it to send the data to a malicious PHP script
+>The `action` parameter specifies what should happen to the input data once the submit button has been clicked - we want it to send the data to a malicious PHP script.
 
 ![source code 1](/images/30.png)
 
@@ -169,3 +172,103 @@ In the above code, we use the values given in the original login page source cod
 We also add a redirect to a legitimate part of the website we are using to help with our phishing activities to make the attack less suspicious - we do this by adding a `Location` header.
 
 ![source code 2](/images/31.png)
+
+### Sorting the Domain Name
+
+With the malicious PHP script in place and the `action` paramater on the login form sending the user supplied data to it, we can turn our attention to making the URL look more legitimate.
+
+>[!NOTE]
+>Lots of phishing campaigns work even though random domain names are used as some people do not check the URL carefully - we will have more success if we pay attention to this part, though :smiley: 
+
+There are lots of *registrars* - they will sell us domain names. In this example we are using [name.com]('https://name.com')
+
+We can search for domain names which are in some way similar to the site we are using for our phishing endeavour. The closer we can get to the original the better - this is a great opportunity to be creative and enjoy the social engineering side of things.
+
+In this example, we are imagining that for some reason we want to access the astrobin account of the target who is intereseted in astrophotography.
+
+Maybe we want to find out more about them and their contacts. Maybe we want to search for other details - astrophotographers probably want to link their work on astrobin to instagram or other social media sites - perhaps we could find data relating to these other accounts on their astrobin account. Or maybe we just want credentials so we can try them elsewhere since password reuse is still rife. Either way, we are attacking their astrobin account and we assume or know that they know about the work of Trevor Jones from [astrobackyard.com]('https://astrobackyard.com') so we look for a domain name which is related to this site.
+
+The domain `astro-backyard.space` is available and even with enhanced privacy included - this keeps our details out of the public domain so people cannot find them using `whois` - the cost is less than 15 euros for a year - cheaper options were available but this one seems good.
+
+![domain 1](/images/13.png)
+
+Even though this seems suspicious :detective: as it is clearly not `astrobin.com` there is a method to the madness  - our plan is to add a subdomain which will be `astrobin` which will make it look like Trevor Jones has set up a new gallery or page which is accessed via astrobin.
+
+>[!TIP]
+>For popular site like `facebook.com` all similar domain names were taken long ago - we can use generic login domain names for sites like this - `loginportal` for example - and then add a `facebook` subdomain to make it look more authentic - `facebook.loginportal.cloud` for example.
+
+Once we have purchased a domain name, we need to set up a DNS `A` record which will link the domain name to the *public* IP address of our cloud server.
+
+![dns1](/images/14.png)
+
+Setting up an `A` record is very easy.
+
+![dns2](/images/15.png)
+
+It can take anywhere from about one minute to just under five billion years for DNS records to update. It is usually done in a few minutes, though, so we can check to see if things are working as expected after a short amount of time - do not worry if not - just give it time.
+
+![dns3](/images/16.png)
+
+We can now create another DNS record for our subdomain - this one will be a `CNAME` record which is essentialy an alias. We will point `astrobin.astro-backyard.space` to `astro-backyard.space` which in turn is linked to the public IP address of the cloud server.
+
+![dns4](/images/17.png)
+
+After a few ~~billion years~~ minutes, we can check and when it works it looks much more authentic - the problem of it not being 'secure' will be addressed soon...
+
+![dns5](/images/18.png)
+
+### Getting a Certificate for https
+
+Let us now get rid of that nasty warning about how the site ahead is not secure and naughty people :vampire: might be trying to steal your details. Browsers display this whenever an `http` site - such as ours - is requested.
+
+We need to get a certificate.
+
+We can do this using `certbot` which is installable on kali linux using the `apt` package manager. We can also install `python3-certbot-apache`
+
+![https1](/images/19.png)
+
+![https2](/images/20.png)
+
+We need to install these on the cloud server which is registered for the domain name since the verification of ownership checks will fail if we request the certificate from a different machine.
+
+```bash
+sudo certbot --apache
+```
+
+![https3](/images/21.png)
+
+We then need to add a new security rule for inbound traffic on port 443 as https uses port 443.
+
+![https4](/images/22.png)
+
+The phishing site now looks a lot better since we do not get any warnings and there is a padlock displayed which reassures lots of people :thumbsup: 
+
+![https5](/images/23.png)
+
+We can add new domains and subdomains to an existing certificate using:
+
+```bash
+sudo certbot certonly -d astro-backyard.space -d astrobin.astroback-yard.space
+```
+
+![https6](/images/24.png)
+
+Our phishing site for this example is now complete - in my opinion it looks good and it definitely is effective when it comes to harvesting credentials.
+
+![success1](/images/25.png)
+
+![success2](/images/26.png)
+
+![success3](/images/28.png)
+
+Okay, so the target is not actually logged into the website, but lots of people will consider this to be a glitch in the matrix :dark_sunglasses: and either way we have already harvested their credentials. The redirect we added to our PHP code helps dampen down suspicion, too.
+
+![success4](/images/27.png)
+
+## Bypassing Two Factor Authentication
+
+Atrobin does not enforce Two Factor Authentication - 2FA - by default so it could well be that once we have harvested the credentials of the target we will be able to login directly as them. However, some websites - github for example - do enforce it if there is a login from an unrecognised device.
+
+This raises the next problem - how can we get around 2FA?
+
+In this example, we are going to use a *browser-in-browser* attack...
