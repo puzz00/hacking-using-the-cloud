@@ -1,6 +1,6 @@
 # Hacking Using the Cloud
 
-For more information about the cloud, please take a look at my notes on [cloud foundations]('https://github.com/puzz00/cloud-foundations/blob/main/cloud-foundations.md')
+For more information about the cloud, please take a look at my notes on [cloud foundations](https://github.com/puzz00/cloud-foundations/blob/main/cloud-foundations.md)
 
 >[!NOTE]
 >In order for the attacks in these notes to work the target will need to be *socially engineered* into clicking on links or inputting data - this is not covered here but I will be adding a repo on it in the - hopefully - near future...
@@ -180,13 +180,13 @@ With the malicious PHP script in place and the `action` paramater on the login f
 >[!NOTE]
 >Lots of phishing campaigns work even though random domain names are used as some people do not check the URL carefully - we will have more success if we pay attention to this part, though :smiley: 
 
-There are lots of *registrars* - they will sell us domain names. In this example we are using [name.com]('https://name.com')
+There are lots of *registrars* - they will sell us domain names. In this example we are using [name.com](https://name.com)
 
 We can search for domain names which are in some way similar to the site we are using for our phishing endeavour. The closer we can get to the original the better - this is a great opportunity to be creative and enjoy the social engineering side of things.
 
 In this example, we are imagining that for some reason we want to access the astrobin account of the target who is intereseted in astrophotography.
 
-Maybe we want to find out more about them and their contacts. Maybe we want to search for other details - astrophotographers probably want to link their work on astrobin to instagram or other social media sites - perhaps we could find data relating to these other accounts on their astrobin account. Or maybe we just want credentials so we can try them elsewhere since password reuse is still rife. Either way, we are attacking their astrobin account and we assume or know that they know about the work of Trevor Jones from [astrobackyard.com]('https://astrobackyard.com') so we look for a domain name which is related to this site.
+Maybe we want to find out more about them and their contacts. Maybe we want to search for other details - astrophotographers probably want to link their work on astrobin to instagram or other social media sites - perhaps we could find data relating to these other accounts on their astrobin account. Or maybe we just want credentials so we can try them elsewhere since password reuse is still rife. Either way, we are attacking their astrobin account and we assume or know that they know about the work of Trevor Jones from [astrobackyard.com](https://astrobackyard.com) so we look for a domain name which is related to this site.
 
 The domain `astro-backyard.space` is available and even with enhanced privacy included - this keeps our details out of the public domain so people cannot find them using `whois` - the cost is less than 15 euros for a year - cheaper options were available but this one seems good.
 
