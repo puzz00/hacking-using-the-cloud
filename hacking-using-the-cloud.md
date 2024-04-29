@@ -297,19 +297,19 @@ Beef is a web browser exploitation framework. We can install it on kali using `s
 
 Once we have installed it we will need to change the default password otherwise it will not start. We can edit the default credentials by opening `/etc/beef-xss/config.yaml` as root.
 
-[!beef1](/images/55.png)
+![beef1](/images/55.png)
 
 We can then start beef using `sudo beef-xss start`
 
-[!beef2](/images/56.png)
+![beef2](/images/56.png)
 
 In order for victim browsers to connect to our malicious server which is running beef on the cloud we will need to open inbound connections for port 3000 since this is the port which beef runs on.
 
-[!beef3](/images/57.png)
+![beef3](/images/57.png)
 
 We can now navigate to the beef login page from any machine connected to the internet. The login page is found on port 3000 at `/ui/panel`
 
-[!beef4](/images/58.png)
+![beef4](/images/58.png)
 
 ### Embedding Malicious Javascript
 
@@ -317,7 +317,7 @@ We need to *hook* a victim browser to beef before we can exploit it. In order to
 
 A good place to insert this code is at the start of the `<head></head>` section.
 
-[!beef5](/images/59.png)
+![beef5](/images/59.png)
 
 The line of code is:
 
@@ -332,7 +332,7 @@ The `hook.js` file contains malicious javascript which hooks the victim browser 
 
 In its default form, the line of code is suspicious, so we can obfuscate it by renaming it and placing it into a directory on our cloud based web server. It is normal for javascript files to be placed into a directory called `/scripts` so this is where we place our malicious hook script - `/scripts/gallery.js` instead of `hook.js`
 
-[!beef6](/images/77.png)
+![beef6](/images/77.png)
 
 This should mask the intention of the file to a casual observer of the source code - most people never look at it anyway - but to avoid more thorough examination if we suspect our page will be subject to it we can use javascript obfuscation techniques. I have detailed some simple ones in my repo about [javascript deobfuscation](https://github.com/puzz00/deobfuscation/blob/main/deobfuscation.md#basic-obfuscation)
 
@@ -345,19 +345,19 @@ The beauty of this technique is that the target only needs to go to the maliciou
 
 As soon as the page loads, the javascript in the malicious file is loaded - providing javascript is enabled in the browser and it most often is - and we will see a new browser in our beef control panel on the cloud server.
 
-[!beef7](/images/60.png)
+![beef7](/images/60.png)
 
-[!beef8](/images/61.png)
+![beef8](/images/61.png)
 
 Once we see an online hooked browser, we can click on it and see lots of detail regarding it in the *Details* section. We can then run commands on it from the *Commands* section.
 
-[!beef9](/images/62.png)
+![beef9](/images/62.png)
 
 In this first example, we see that the browser has been successfully hooked because a simple prompt works.
 
-[!beef10](/images/63.png)
+![beef10](/images/63.png)
 
-[!beef11](/images/64.png)
+![beef11](/images/64.png)
 
 ### Enabling HTTPS
 
@@ -376,25 +376,25 @@ sudo cp /etc/letsencrypt/live/gaqzirkalewu.astro-backyard.space/privkey.pem /usr
 sudo cp /etc/letsencrypt/live/gaqzirkalewu.astro-backyard.space/fullchain.pem /usr/share/beef-xss
 ```
 
-[!beef12](/images/65.png)
+![beef12](/images/65.png)
 
 We now need to make some amendments to the `/etc/beef-xss/config.yaml` file as shown in the pictures below.
 
-[!beef13](/images/66.png)
+![beef13](/images/66.png)
 
-[!beef14](/images/67.png)
+![beef14](/images/67.png)
 
 We can now access the https version of the beef control panel.
 
-[!beef15](/images/68.png)
+![beef15](/images/68.png)
 
 We need to change the source code of our malicious webpage so https is specified rather than http.
 
-[!beef16](/images/69.png)
+![beef16](/images/69.png)
 
 The target will now see a padlock and https being used on our malicious webpage.
 
-[!beef17](/images/70.png)
+![beef17](/images/70.png)
 
 ### Exploiting the Browser
 
@@ -406,21 +406,21 @@ We can already get a rough idea of where the target is from their IP address whi
 
 With https enabled, we can attempt to get an exact location of the target via geolocation. This will ask for permission from the victim via a pop-up. Social engineering once again comes into play - we will need the victim to allow access to their location via clever trickery.
 
-[!beef18](/images/71.png)
+![beef18](/images/71.png)
 
-[!beef19](/images/72.png)
+![beef19](/images/72.png)
 
 We can run the `Webcam HTML5` command to attempt to access the victims webcam. Again, they will need to give permission via a pop-up.
 
-[!beef20](/images/73.png)
+![beef20](/images/73.png)
 
 Regarding social engineering endeavours, there are lots of useful commands in beef to help us with these. A great one is `Pretty Theft` which lets us craft a simple `div` which will attempt to socially engineer the victim into sending credentials to us.
 
-[!beef21](/images/74.png)
+![beef21](/images/74.png)
 
-[!beef6](/images/75.png)
+![beef22](/images/75.png)
 
-[!beef6](/images/76.png)
+![beef23](/images/76.png)
 
 ### Conclusion
 
