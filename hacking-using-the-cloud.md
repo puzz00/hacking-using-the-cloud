@@ -475,7 +475,7 @@ When we navigate to the `http://gaqzirkalewu.astro-backyard.space:1337/index.htm
 
 ![cc6](/images/86.png)
 
-The first thing we need to do is set up a new user so we can disable the default user - this is being served on the cloud so anybody who accesses the login page could easily gain access to our hacked machines inside empire if the default user is still enabled - not a good day at the office :shocked_face_with_exploding_head: 
+The first thing we need to do is set up a new user so we can disable the default user - this is being served on the cloud so anybody who accesses the login page could easily gain access to our hacked machines inside empire if the default user is still enabled - not a good day at the office :exploding_head: 
 
 ![cc7](/images/87.png)
 
