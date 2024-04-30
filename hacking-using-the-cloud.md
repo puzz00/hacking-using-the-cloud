@@ -435,3 +435,131 @@ Once a browser has been hooked to beef there are lots of ways we can exploit it 
 >If we find an *XSS* vulnerability - we can place our javascript beef hook onto a legitimate website via it
 >We can even use our beef hook in a *honeypot* website which we have crafted
 
+## Command and Control from the Cloud
+
+In this section we will look at how we can install and use a *Command and Control* server on the cloud. We will be using [empire](https://github.com/BC-SECURITY/Empire) as it is open source and effective.
+
+>[!NOTE]
+>My repo on using [powershell for pentesting](https://github.com/puzz00/powershell-pentesting/blob/main/powershell-pentesting.md#powershell-empire) goes over using empire from the command line
+
+We will be looking here at using the *starkiller* web interface since once it has been installed on our cloud server we will be able to easily access it from any device which is connected to the internet.
+
+### Installation and Setting Empire Up
+
+We can install empire from the [empire repo](https://github.com/BC-SECURITY/Empire) We first of all *clone* it.
+
+![cc1](/images/80.png)
+
+We then make the `/opt` directory owned by `kali` using `sudo chown kali:kali /opt` We will also need to give the `kali` user a password since one will be needed to install empire.
+
+![cc2](/images/81.png)
+
+We can now *clone* the repo to our server using `git clone --recursive https://github.com/BC-SECURITY/Empire.git`
+
+>[!NOTE]
+>It is common to install *optional* packages like empire into the `/opt` directory on a linux system
+
+We can then navigate into the `/Empire/` directory and use `./setup/checkout-latest-tag.sh` to make sure that we have the latest stable version.
+
+![cc3](/images/83.png)
+
+We can now install empire using `./setup/install.sh` Once we have done this we can start the server using `sudo powershell-empire server`
+
+![cc4](/images/84.png)
+
+We then need to allow inbound traffic to port `1337` as empire uses this port.
+
+![cc5](/images/85.png)
+
+When we navigate to the `http://gaqzirkalewu.astro-backyard.space:1337/index.html` page we will find the login form. We need to change the Url field to match the domain name of our server. The default credentials are `empireadmin:password123`
+
+![cc6](/images/86.png)
+
+The first thing we need to do is set up a new user so we can disable the default user - this is being served on the cloud so anybody who accesses the login page could easily gain access to our hacked machines inside empire if the default user is still enabled - not a good day at the office :shocked_face_with_exploding_head: 
+
+![cc7](/images/87.png)
+
+![cc8](/images/88.png)
+
+>[!NOTE]
+>We can restrict which IP addresses or blocks have access to our cloud instances but it is never a good idea to leave default accounts with default credentials exposed to the internet
+
+### Listeners, Stagers and Agents
+
+For more detail about what these are, please see my repo on [powershell for pentesting](https://github.com/puzz00/powershell-pentesting/blob/main/powershell-pentesting.md#powershell-empire)
+
+In the pictures below we see how we can create listeners and stagers using starkiller and what it looks like when an agent checks in.
+
+![cc9](/images/89.png)
+
+![cc10](/images/90.png)
+
+![cc11](/images/91.png)
+
+![cc12](/images/92.png)
+
+### Interacting with an Agent
+
+We can easily navigate the agents file system from starkiller - the pictures show how we can do this.
+
+![cc13](/images/93.png)
+
+![cc14](/images/94.png)
+
+![cc15](/images/95.png)
+
+### Running Modules
+
+We can run modules on an agent using the starkiller interface.
+
+![cc16](/images/96.png)
+
+![cc17](/images/97.png)
+
+![cc18](/images/98.png)
+
+![cc19](/images/99.png)
+
+![cc20](/images/100.png)
+
+#### Phishing for Credentials
+
+There is a good module we can use to phish for credentials to access a windows machine. It can lead to further access to an organizations network since if successful we will receive network creds.
+
+The module is called `powershell_collection_toasted`
+
+![cc21](/images/101.png)
+
+![cc22](/images/102.png)
+
+![cc23](/images/103.png)
+
+![cc24](/images/104.png)
+
+>[!TIP]
+>Set the value for *verify creds* to *True* so the target will be continuously prompted to enter valid credentials if they enter incorrect ones
+
+#### Keylogger and Clipboard Monitor Modules
+
+If we want to log keystrokes - possibly to retrieve valid credentials - we can use `powershell_collection_keylogger` and if we suspect that the target is copying and pasting passwords into applications from a password manager we can monitor their clipboard contents using `powershell_collection_clipboard_monitor`
+
+![cc25](/images/105.png)
+
+![cc26](/images/106.png)
+
+![cc27](/images/107.png)
+
+![cc28](/images/108.png)
+
+#### Simulating a Ransomware Attack
+
+We might be tasked with testing the ransomware response of a client - we can do this from empire using the `powershell_exfiltration_psransom` module.
+
+![cc29](/images/109.png)
+
+![cc30](/images/110.png)
+
+![cc31](/images/111.png)
+
+>[!IMPORTANT]
+>The *recovery key* is in the `readme` text file - this can be used with the same module set to *decrypt* to recover the clients files - be careful with this module - test it and make sure you have the scope to use it if it works as expected
